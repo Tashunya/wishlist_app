@@ -3,12 +3,23 @@ from PyQt5.QtWidgets import QDialog, QInputDialog, QLineEdit, QMessageBox
 import db_manager
 
 
+class ItemWindow(QDialog):
+    def __init__(self, parent=None):
+        super(ItemWindow, self).__init__(parent)
+        QDialog.__init__(self)
+        self.setupUi(self)
+
+    def setupUi(self, ItemWindow):
+        ItemWindow.setObjectName('Item Window')
+        ItemWindow.resize(500, 500)
+
+
 class Ui_Wishlist(QDialog):
     def __init__(self, database, table_name):
         QDialog.__init__(self)
         self.dbu = db_manager.DatabaseUtility(database, table_name)
         self.setupUi(self)
-        self.update_list()
+        # self.update_list()
 
     def setupUi(self, Wishlist):
         Wishlist.setObjectName("Wishlist")
@@ -32,6 +43,12 @@ class Ui_Wishlist(QDialog):
         self.pushButton_add.setObjectName("pushButton_add")
         self.verticalLayout.addWidget(self.pushButton_add)
 
+        # show
+        self.pushButton_show = QtWidgets.QPushButton(self.widget)
+        self.pushButton_show.setObjectName("pushButton_show")
+        # self.pushButton_show.setEnabled(False)
+        self.verticalLayout.addWidget(self.pushButton_show)
+
         # edit
         self.pushButton_edit = QtWidgets.QPushButton(self.widget)
         self.pushButton_edit.setObjectName("pushButton_edit")
@@ -44,11 +61,6 @@ class Ui_Wishlist(QDialog):
         # self.pushButton_remove.setEnabled(False)
         self.verticalLayout.addWidget(self.pushButton_remove)
 
-        # up
-        self.pushButton_up = QtWidgets.QPushButton(self.widget)
-        self.pushButton_up.setObjectName("pushButton_up")
-        self.pushButton_up.setEnabled(False)
-        self.verticalLayout.addWidget(self.pushButton_up)
 
         #down
         self.pushButton_down = QtWidgets.QPushButton(self.widget)
@@ -64,11 +76,14 @@ class Ui_Wishlist(QDialog):
         self.pushButton_close.setObjectName("pushButton_close")
         self.verticalLayout.addWidget(self.pushButton_close)
 
+        # show - for test
+        self.pushButton_show.clicked.connect(self.pushButton_show_clicked)
+        self.dialog = ItemWindow(self)
+
         self.pushButton_close.clicked.connect(self.close_app)
         self.pushButton_add.clicked.connect(self.add_wish)
         self.pushButton_edit.clicked.connect(self.edit_wish)
         self.pushButton_remove.clicked.connect(self.remove_wish)
-
 
         self.horizontalLayout.addLayout(self.verticalLayout)
         Wishlist.setCentralWidget(self.centralwidget)
@@ -86,14 +101,18 @@ class Ui_Wishlist(QDialog):
         _translate = QtCore.QCoreApplication.translate
         Wishlist.setWindowTitle(_translate("Wishlist", "Wishlist"))
         self.pushButton_add.setText(_translate("Wishlist", "Добавить"))
+        self.pushButton_show.setText(_translate("Wishlist", "Показать"))
         self.pushButton_edit.setText(_translate("Wishlist", "Изменить"))
         self.pushButton_remove.setText(_translate("Wishlist", "Удалить"))
-        self.pushButton_up.setText(_translate("Wishlist", "Вверх"))
         self.pushButton_down.setText(_translate("Wishlist", "Вниз"))
         self.pushButton_close.setText(_translate("Wishlist", "Закрыть"))
 
     def update_list(self):
         pass
+
+    # show item window
+    def pushButton_show_clicked(self):
+        self.dialog.show()
 
     def show_wishes(self, wishes):
         self.listWidget.addItems(wishes)

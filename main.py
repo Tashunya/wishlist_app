@@ -24,11 +24,10 @@ class WishlistApp(QMainWindow, Ui_Wishlist):
         self.setupUi(self)
 
 
-
 def main():
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
-    window = WishlistApp()
+    window = WishlistApp(database='wishlistdb', table_name='wishlist')
     window.show()
     app.exec_()
 

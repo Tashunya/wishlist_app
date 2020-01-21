@@ -7,7 +7,7 @@ class DatabaseUtility:
         self.db = database
         self.table_name = table_name
 
-        self.cnx = mysql.connector.connect(user='root', password='', host='127.0.0.1')
+        self.cnx = mysql.connector.connect(user='root', password='123123', host='127.0.0.1')
         self.cursor = self.cnx.cursor()
 
         self.connect_to_db()
@@ -15,28 +15,32 @@ class DatabaseUtility:
 
     def connect_to_db(self):
         try:
-            self.cnx.database = self.db
+            self.cursor.execute('USE {}'.format(self.db))
+            print(f'Connected to {self.db}')
         except mysql.connector.Error as err:
+            print('ЕГОРКА')
             if err.errno == errorcode.ER_BAD_DB_ERROR:
                 self.create_db()
+                print(f'Database {self.db} created successfully')
                 self.cnx.database = self.db
             else:
                 print(err.msg)
 
     def create_db(self):
         try:
-            self.run_command("CREATE DATABASE %s DEFAULT CHARACTER SET 'utf-8';" % self.db)
+            self.run_command(f"CREATE DATABASE {self.db} DEFAULT CHARACTER SET 'utf8'")
         except mysql.connector.Error as err:
             print(f'Failed creating database: {err}')
 
     def create_table(self):
-        cmd = (" CREATE TABLE IF NOT EXISTS " + self.table_name + " ("
-               " `ID` int(4) NOT NULL AUTO_INCREMENT,"
-               " `name` char(50) NOT NULL,"
-               " `price` char(50), "
-               " `link` char, "
-               "  `comment` char(250), "
-               ") ENGINE=InnoDB;")
+        cmd = (f" CREATE TABLE IF NOT EXISTS `{self.table_name}` ("
+               " `id` int(4) NOT NULL AUTO_INCREMENT,"
+               " `name` char(250) NOT NULL,"
+               " `price` char(50),"
+               " `link` text,"
+               " `comment` varchar(250),"
+               " PRIMARY KEY (`id`)"
+               ") ENGINE=InnoDB")
         self.run_command(cmd)
 
     def get_table(self):
@@ -67,16 +71,16 @@ class DatabaseUtility:
             print('ERROR MESSAGE: ' + str(err.msg))
             print('WITH ' + cmd)
 
-        try:
-            msg = self.cursor.fetchall()
-        except:
-            msg = self.cursor.fetchone()
-
-        return msg
+        # try:
+        #     msg = self.cursor.fetchall()
+        # except:
+        #     msg = self.cursor.fetchone()
+        #
+        # return msg
 
 
 if __name__ == '__main__':
-    db = 'wishlist_db'
+    db = 'wishlistdb'
     table_name = 'wishlist'
 
     dbu = DatabaseUtility(db, table_name)
