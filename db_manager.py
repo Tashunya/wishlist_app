@@ -1,5 +1,6 @@
 import mysql.connector
 from mysql.connector import errorcode
+from PyQt5.QtWidgets import QMessageBox
 
 
 class DatabaseUtility:
@@ -7,7 +8,7 @@ class DatabaseUtility:
         self.db = database
         self.table_name = table_name
 
-        self.cnx = mysql.connector.connect(user='root', password='123123', host='127.0.0.1')
+        self.cnx = mysql.connector.connect(user='root', password='', host='127.0.0.1')
         self.cursor = self.cnx.cursor()
 
         self.connect_to_db()
@@ -49,9 +50,9 @@ class DatabaseUtility:
     def get_column(self):
         pass
 
-    def add_wish_to_table(self, message):
-        cmd = "INSERT INTO" + self.table_name + " (name, price, link, comment)"
-        cmd += " VALUES "
+    # def add_wish_to_table(self, message):
+    #     cmd = "INSERT INTO" + self.table_name + " (name, price, link, comment)"
+    #     cmd += " VALUES "
 
     def edit_wish(self, wish):
         pass
@@ -70,6 +71,12 @@ class DatabaseUtility:
         except mysql.connector.Error as err:
             print('ERROR MESSAGE: ' + str(err.msg))
             print('WITH ' + cmd)
+            print(f"Error: {err.args[0]}, {err.args[1]}")
+            self.cnx.rollback()
+            alert = QMessageBox()
+            alert.setText('Что-то пошло не так')
+            alert.exec_()
+            self.close_window()
 
         # try:
         #     msg = self.cursor.fetchall()

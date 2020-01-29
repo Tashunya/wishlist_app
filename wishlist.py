@@ -1,17 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog, QInputDialog, QLineEdit, QMessageBox
 import db_manager
-
-
-class ItemWindow(QDialog):
-    def __init__(self, parent=None):
-        super(ItemWindow, self).__init__(parent)
-        QDialog.__init__(self)
-        self.setupUi(self)
-
-    def setupUi(self, ItemWindow):
-        ItemWindow.setObjectName('Item Window')
-        ItemWindow.resize(500, 500)
+from insert_wish import CreateWishWindow
 
 
 class Ui_Wishlist(QDialog):
@@ -61,14 +51,14 @@ class Ui_Wishlist(QDialog):
         # self.pushButton_remove.setEnabled(False)
         self.verticalLayout.addWidget(self.pushButton_remove)
 
-
         #down
         self.pushButton_down = QtWidgets.QPushButton(self.widget)
         self.pushButton_down.setObjectName("pushButton_down")
         self.pushButton_down.setEnabled(False)
         self.verticalLayout.addWidget(self.pushButton_down)
 
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum,
+                                           QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
 
         # close
@@ -76,14 +66,11 @@ class Ui_Wishlist(QDialog):
         self.pushButton_close.setObjectName("pushButton_close")
         self.verticalLayout.addWidget(self.pushButton_close)
 
-        # show - for test
-        self.pushButton_show.clicked.connect(self.pushButton_show_clicked)
-        self.dialog = ItemWindow(self)
 
-        self.pushButton_close.clicked.connect(self.close_app)
-        self.pushButton_add.clicked.connect(self.add_wish)
+        self.pushButton_add.clicked.connect(self.pushButton_add_clicked)
         self.pushButton_edit.clicked.connect(self.edit_wish)
         self.pushButton_remove.clicked.connect(self.remove_wish)
+        self.pushButton_close.clicked.connect(self.close_app)
 
         self.horizontalLayout.addLayout(self.verticalLayout)
         Wishlist.setCentralWidget(self.centralwidget)
@@ -110,22 +97,15 @@ class Ui_Wishlist(QDialog):
     def update_list(self):
         pass
 
-    # show item window
-    def pushButton_show_clicked(self):
-        self.dialog.show()
+    # add item window
+    def pushButton_add_clicked(self):
+        self.dialog = CreateWishWindow(self, dbu=self.dbu)
 
     def show_wishes(self, wishes):
         self.listWidget.addItems(wishes)
 
     def close_app(self):
         quit()
-
-    def add_wish(self):
-        row = self.listWidget.currentRow()
-        text, ok = QInputDialog.getText(self, 'Новое желание', 'Я хочу...')
-
-        if ok and text is not None:
-            self.listWidget.insertItem(row, text)
 
     def edit_wish(self):
         row = self.listWidget.currentRow()
