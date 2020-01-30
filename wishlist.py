@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QDialog, QInputDialog, QLineEdit, QMessageBox
+from PyQt5.QtWidgets import QDialog, QMessageBox
 import db_manager
 from insert_wish import CreateWishWindow
 
@@ -9,7 +9,6 @@ class Ui_Wishlist(QDialog):
         QDialog.__init__(self)
         self.dbu = db_manager.DatabaseUtility(database, table_name)
         self.setupUi(self)
-        # self.update_list()
 
     def setupUi(self, Wishlist):
         Wishlist.setObjectName("Wishlist")
@@ -22,9 +21,14 @@ class Ui_Wishlist(QDialog):
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.widget)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.listWidget = QtWidgets.QListWidget(self.widget)
-        self.listWidget.setObjectName("listWidget")
-        self.horizontalLayout.addWidget(self.listWidget)
+
+        self.tableWidget = QtWidgets.QTreeWidget(self.widget)
+        self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget.setHeaderLabels(['', 'Желание', 'Цена'])
+        self.tableWidget.setColumnWidth(1, 300)
+        self.tableWidget.itemSelectionChanged.connect(self.selected_items)
+        self.horizontalLayout.addWidget(self.tableWidget)
+
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
 
@@ -36,19 +40,19 @@ class Ui_Wishlist(QDialog):
         # show
         self.pushButton_show = QtWidgets.QPushButton(self.widget)
         self.pushButton_show.setObjectName("pushButton_show")
-        # self.pushButton_show.setEnabled(False)
+        self.pushButton_show.setEnabled(False)
         self.verticalLayout.addWidget(self.pushButton_show)
 
         # edit
         self.pushButton_edit = QtWidgets.QPushButton(self.widget)
         self.pushButton_edit.setObjectName("pushButton_edit")
-        # self.pushButton_edit.setEnabled(False)
+        self.pushButton_edit.setEnabled(False)
         self.verticalLayout.addWidget(self.pushButton_edit)
 
         # remove
         self.pushButton_remove = QtWidgets.QPushButton(self.widget)
         self.pushButton_remove.setObjectName("pushButton_remove")
-        # self.pushButton_remove.setEnabled(False)
+        self.pushButton_remove.setEnabled(False)
         self.verticalLayout.addWidget(self.pushButton_remove)
 
         #down
@@ -66,7 +70,6 @@ class Ui_Wishlist(QDialog):
         self.pushButton_close.setObjectName("pushButton_close")
         self.verticalLayout.addWidget(self.pushButton_close)
 
-
         self.pushButton_add.clicked.connect(self.pushButton_add_clicked)
         self.pushButton_edit.clicked.connect(self.edit_wish)
         self.pushButton_remove.clicked.connect(self.remove_wish)
@@ -80,9 +83,7 @@ class Ui_Wishlist(QDialog):
 
         self.retranslateUi(Wishlist)
         QtCore.QMetaObject.connectSlotsByName(Wishlist)
-
-        self.wishes = ['Wish 1', 'Wish 2', 'Wish 3']
-        self.show_wishes(self.wishes)
+        self.update_table()
 
     def retranslateUi(self, Wishlist):
         _translate = QtCore.QCoreApplication.translate
@@ -94,42 +95,56 @@ class Ui_Wishlist(QDialog):
         self.pushButton_down.setText(_translate("Wishlist", "Вниз"))
         self.pushButton_close.setText(_translate("Wishlist", "Закрыть"))
 
-    def update_list(self):
-        pass
+    def update_table(self):
+        rows = self.dbu.get_table()
+        self.tableWidget.clear()
+        for i in range(len(rows)):
+            item = rows[i]
+            item_to_add = QtWidgets.QTreeWidgetItem(self.tableWidget,
+                                                    [str(i+1), item[1], item[2], str(item[0])])
+            self.tableWidget.insertTopLevelItem(i, item_to_add)
 
     # add item window
     def pushButton_add_clicked(self):
-        self.dialog = CreateWishWindow(self, dbu=self.dbu)
+        self.dialog = CreateWishWindow(parent=self, dbu=self.dbu)
 
-    def show_wishes(self, wishes):
-        self.listWidget.addItems(wishes)
+    def selected_items(self):
+        selected = self.tableWidget.selectedItems()
+        if selected:
+            self.pushButton_show.setEnabled(True)
+            self.pushButton_remove.setEnabled(True)
+            self.pushButton_edit.setEnabled(True)
+            item = selected[0]
+            return item
+
+    def remove_wish(self):
+        item = self.selected_items()
+        if item:
+            reply = QMessageBox.question(self, 'Удалить желание',
+                                         f'Вы хотите удалить {item.text(1)}?',
+                                         QMessageBox.Yes | QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                item_id = int(item.text(3))
+                self.dbu.del_wish(item_id)
+                self.update_table()
+                print("Желание удалено")
+                alert = QMessageBox()
+                alert.setText("Желание удалено")
+                alert.exec_()
+
+    def edit_wish(self):
+        pass
+        # row = self.listWidget.currentRow()
+        # item = self.listWidget.item(row)
+        #
+        # if item is not None:
+        #     text, ok = QInputDialog.getText(self, 'Изменить', 'Отредактируйте желание',
+        #                                     QLineEdit.Normal, item.text())
+        #     if ok and text is not None:
+        #         item.setText(text)
 
     def close_app(self):
         quit()
-
-    def edit_wish(self):
-        row = self.listWidget.currentRow()
-        item = self.listWidget.item(row)
-
-        if item is not None:
-            text, ok = QInputDialog.getText(self, 'Изменить', 'Отредактируйте желание',
-                                            QLineEdit.Normal, item.text())
-            if ok and text is not None:
-                item.setText(text)
-
-    def remove_wish(self):
-        row = self.listWidget.currentRow()
-        item = self.listWidget.item(row)
-
-        if item is None:
-            return
-        reply = QMessageBox.question(self, 'Удалить желание', 'Вы хотите удалить '
-                                     + str(item.text()) + '?',
-                                     QMessageBox.Yes | QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            item = self.listWidget.takeItem(row)
-            del item
-
 
 if __name__ == "__main__":
     import sys

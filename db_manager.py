@@ -8,7 +8,7 @@ class DatabaseUtility:
         self.db = database
         self.table_name = table_name
 
-        self.cnx = mysql.connector.connect(user='root', password='', host='127.0.0.1')
+        self.cnx = mysql.connector.connect(user='root', password='123123', host='127.0.0.1')
         self.cursor = self.cnx.cursor()
 
         self.connect_to_db()
@@ -45,20 +45,23 @@ class DatabaseUtility:
         self.run_command(cmd)
 
     def get_table(self):
-        pass
+        self.create_table()
+        return self.run_command(f"SELECT * FROM `{self.table_name}`")
 
-    def get_column(self):
-        pass
+    def get_columns(self):
+        return self.run_command(f"SHOW COLUMNS FROM `{self.table_name}`")
 
-    # def add_wish_to_table(self, message):
-    #     cmd = "INSERT INTO" + self.table_name + " (name, price, link, comment)"
-    #     cmd += " VALUES "
+    def add_wish(self, name, price, link, comment):
+        cmd = f"INSERT INTO `{self.table_name}` (`name`, `price`, `link`, `comment`)"
+        cmd += f" VALUES ('{name}', '{price}', '{link}', '{comment}')"
+        self.run_command(cmd)
 
-    def edit_wish(self, wish):
-        pass
+    def edit_wish(self):
+        cmd = f""
+        self.run_command(cmd)
 
     def del_wish(self, wish):
-        pass
+        self.run_command(f"DELETE FROM `{self.table_name}` WHERE `id`={int(wish)}")
 
     def __del__(self):
         self.cnx.commit()
@@ -76,14 +79,13 @@ class DatabaseUtility:
             alert = QMessageBox()
             alert.setText('Что-то пошло не так')
             alert.exec_()
-            self.close_window()
 
-        # try:
-        #     msg = self.cursor.fetchall()
-        # except:
-        #     msg = self.cursor.fetchone()
-        #
-        # return msg
+        try:
+            msg = self.cursor.fetchall()
+        except:
+            msg = self.cursor.fetchone()
+
+        return msg
 
 
 if __name__ == '__main__':

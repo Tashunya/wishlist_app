@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QDialog, QLineEdit, QTextEdit, QPushButton, QVBoxLay
 class CreateWishWindow(QDialog):
     def __init__(self, parent=None, dbu=None):
         super(CreateWishWindow, self).__init__(parent)
+        self.parent = parent
         self.dbu = dbu
         QDialog.__init__(self)
         self.setupUi(self)
@@ -28,22 +29,23 @@ class CreateWishWindow(QDialog):
         vbox.addWidget(self.comment)
 
         self.submit_btn = QPushButton('Сохранить', self)
-        self.close_btn = QPushButton('Закрыть', self)
         vbox.addWidget(self.submit_btn)
+        self.close_btn = QPushButton('Закрыть', self)
         vbox.addWidget(self.close_btn)
+
         self.setLayout(vbox)
 
         self.submit_btn.clicked.connect(self.add_new_wish)
         self.close_btn.clicked.connect(self.close_window)
+
         self.show()
 
     def add_new_wish(self):
         if self.name.text() != "":
-            cmd = f"INSERT INTO `{self.dbu.table_name}` (`name`, `price`, `link`, `comment`)"
-            cmd += f" VALUES ('{self.name.text()}', '{self.price.text()}'," \
-                   f" '{self.link.toPlainText()}', '{self.comment.toPlainText()}')"
-            self.dbu.run_command(cmd)
-            self.dbu.cnx.commit()
+            name, price, link, comment = self.name.text(), self.price.text(), \
+                                         self.link.toPlainText(), self.comment.toPlainText()
+
+            self.dbu.add_wish(name, price, link, comment)
             alert = QMessageBox()
             print("Закоммичено")
             alert.setText("Желание сохранено")
@@ -51,8 +53,9 @@ class CreateWishWindow(QDialog):
             self.close_window()
         else:
             alert = QMessageBox()
-            alert.setText('Заполните поле "Я хочу"')
+            alert.setText('Заполните поле "Название"')
             alert.exec_()
 
     def close_window(self):
+        self.parent.update_table()
         self.close()
