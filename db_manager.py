@@ -56,8 +56,16 @@ class DatabaseUtility:
         cmd += f" VALUES ('{name}', '{price}', '{link}', '{comment}')"
         self.run_command(cmd)
 
-    def edit_wish(self):
-        cmd = f""
+    def get_wish(self, id):
+        cmd = f"SELECT * from `{self.table_name}` WHERE `id`={int(id)}"
+        item = self.run_command(cmd)[0]
+        return item
+
+    def edit_wish(self, wish_id, *fields):
+        cmd = f"UPDATE `{self.table_name}` SET "
+        cmd += f"`name`= '{fields[0]}', `price`='{fields[1]}', " \
+               f"`link`='{fields[2]}', `comment`='{fields[3]}'"
+        cmd += f" WHERE `id`={wish_id}"
         self.run_command(cmd)
 
     def del_wish(self, wish):

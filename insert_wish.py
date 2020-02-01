@@ -10,7 +10,7 @@ class CreateWishWindow(QDialog):
         self.setupUi(self)
 
     def setupUi(self, item_window):
-        item_window.setObjectName('Я хочу...')
+        item_window.setWindowTitle('Я хочу...')
         item_window.resize(500, 500)
 
         vbox = QVBoxLayout()
@@ -41,21 +41,28 @@ class CreateWishWindow(QDialog):
         self.show()
 
     def add_new_wish(self):
+        """
+        Add new wish to db
+        """
         if self.name.text() != "":
             name, price, link, comment = self.name.text(), self.price.text(), \
                                          self.link.toPlainText(), self.comment.toPlainText()
 
             self.dbu.add_wish(name, price, link, comment)
             alert = QMessageBox()
-            print("Закоммичено")
+            alert.setWindowTitle('Сохранение')
             alert.setText("Желание сохранено")
             alert.exec_()
             self.close_window()
         else:
             alert = QMessageBox()
+            alert.setWindowTitle('Ошибка')
             alert.setText('Заполните поле "Название"')
             alert.exec_()
 
     def close_window(self):
+        """
+        Close dialog window
+        """
         self.parent.update_table()
         self.close()

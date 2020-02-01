@@ -12,8 +12,7 @@
 '''
 
 
-from PyQt5.QtWidgets import QApplication, QLabel, \
-    QWidget, QPushButton, QVBoxLayout, QMainWindow, QGridLayout
+from PyQt5.QtWidgets import QApplication, QMainWindow
 import sys
 from wishlist import Ui_Wishlist
 

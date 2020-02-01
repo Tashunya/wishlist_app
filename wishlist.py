@@ -1,7 +1,8 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QDialog, QMessageBox
 import db_manager
 from insert_wish import CreateWishWindow
+from change_wish import ChangeWishWindow
 
 
 class Ui_Wishlist(QDialog):
@@ -37,12 +38,6 @@ class Ui_Wishlist(QDialog):
         self.pushButton_add.setObjectName("pushButton_add")
         self.verticalLayout.addWidget(self.pushButton_add)
 
-        # show
-        self.pushButton_show = QtWidgets.QPushButton(self.widget)
-        self.pushButton_show.setObjectName("pushButton_show")
-        self.pushButton_show.setEnabled(False)
-        self.verticalLayout.addWidget(self.pushButton_show)
-
         # edit
         self.pushButton_edit = QtWidgets.QPushButton(self.widget)
         self.pushButton_edit.setObjectName("pushButton_edit")
@@ -55,12 +50,6 @@ class Ui_Wishlist(QDialog):
         self.pushButton_remove.setEnabled(False)
         self.verticalLayout.addWidget(self.pushButton_remove)
 
-        #down
-        self.pushButton_down = QtWidgets.QPushButton(self.widget)
-        self.pushButton_down.setObjectName("pushButton_down")
-        self.pushButton_down.setEnabled(False)
-        self.verticalLayout.addWidget(self.pushButton_down)
-
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum,
                                            QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
@@ -70,8 +59,8 @@ class Ui_Wishlist(QDialog):
         self.pushButton_close.setObjectName("pushButton_close")
         self.verticalLayout.addWidget(self.pushButton_close)
 
-        self.pushButton_add.clicked.connect(self.pushButton_add_clicked)
-        self.pushButton_edit.clicked.connect(self.edit_wish)
+        self.pushButton_add.clicked.connect(self.add_new_wish_window)
+        self.pushButton_edit.clicked.connect(self.edit_wish_window)
         self.pushButton_remove.clicked.connect(self.remove_wish)
         self.pushButton_close.clicked.connect(self.close_app)
 
@@ -89,13 +78,14 @@ class Ui_Wishlist(QDialog):
         _translate = QtCore.QCoreApplication.translate
         Wishlist.setWindowTitle(_translate("Wishlist", "Wishlist"))
         self.pushButton_add.setText(_translate("Wishlist", "Добавить"))
-        self.pushButton_show.setText(_translate("Wishlist", "Показать"))
-        self.pushButton_edit.setText(_translate("Wishlist", "Изменить"))
+        self.pushButton_edit.setText(_translate("Wishlist", "Показать"))
         self.pushButton_remove.setText(_translate("Wishlist", "Удалить"))
-        self.pushButton_down.setText(_translate("Wishlist", "Вниз"))
         self.pushButton_close.setText(_translate("Wishlist", "Закрыть"))
 
     def update_table(self):
+        """
+        Update wishlist from db
+        """
         rows = self.dbu.get_table()
         self.tableWidget.clear()
         for i in range(len(rows)):
@@ -104,20 +94,38 @@ class Ui_Wishlist(QDialog):
                                                     [str(i+1), item[1], item[2], str(item[0])])
             self.tableWidget.insertTopLevelItem(i, item_to_add)
 
-    # add item window
-    def pushButton_add_clicked(self):
+    def add_new_wish_window(self):
+        """
+        Open window to create new wish
+        """
         self.dialog = CreateWishWindow(parent=self, dbu=self.dbu)
 
     def selected_items(self):
+        """
+        Return selected item
+        :return: PyQt5.QtWidgets.QTreeWidgetItem object;
+        (number_in_table, name, price, db_id)
+        """
         selected = self.tableWidget.selectedItems()
         if selected:
-            self.pushButton_show.setEnabled(True)
             self.pushButton_remove.setEnabled(True)
             self.pushButton_edit.setEnabled(True)
             item = selected[0]
             return item
 
+    def edit_wish_window(self):
+        """
+        Open window to show, edit and delete selected wish
+        """
+        item = self.selected_items()
+        if item:
+            item_id = int(item.text(3))
+            self.dialog = ChangeWishWindow(item_id=item_id, parent=self, dbu=self.dbu)
+
     def remove_wish(self):
+        """
+        Remove wish directly from the main window
+        """
         item = self.selected_items()
         if item:
             reply = QMessageBox.question(self, 'Удалить желание',
@@ -127,24 +135,14 @@ class Ui_Wishlist(QDialog):
                 item_id = int(item.text(3))
                 self.dbu.del_wish(item_id)
                 self.update_table()
-                print("Желание удалено")
                 alert = QMessageBox()
+                alert.setWindowTitle('Удаление')
                 alert.setText("Желание удалено")
                 alert.exec_()
 
-    def edit_wish(self):
-        pass
-        # row = self.listWidget.currentRow()
-        # item = self.listWidget.item(row)
-        #
-        # if item is not None:
-        #     text, ok = QInputDialog.getText(self, 'Изменить', 'Отредактируйте желание',
-        #                                     QLineEdit.Normal, item.text())
-        #     if ok and text is not None:
-        #         item.setText(text)
-
     def close_app(self):
         quit()
+
 
 if __name__ == "__main__":
     import sys
