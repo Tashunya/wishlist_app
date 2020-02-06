@@ -51,9 +51,9 @@ class ChangeWishWindow(CreateWishWindow):
                                          f'Сохранить изменения?',
                                          QMessageBox.Yes | QMessageBox.No)
             if reply == QMessageBox.Yes:
-                name, price, link, comment = self.name.text(), self.price.text(), \
+                fields = self.name.text(), self.price.text(), \
                                              self.link.toPlainText(), self.comment.toPlainText()
-                self.dbu.edit_wish(self.item_id, name, price, link, comment)
+                self.dbu.edit_wish(self.item_id, fields)
                 alert = QMessageBox()
                 alert.setWindowTitle('Сохранение')
                 alert.setText("Желание изменено")
